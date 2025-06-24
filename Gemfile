@@ -52,6 +52,7 @@ group :development, :test do
   gem "rubocop", require: false
   gem "rubocop-performance", require: false
   gem "rubocop-rails", require: false
+  gem "rubocop-lsp", require: false
 
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
@@ -66,6 +67,9 @@ group :development do
 
   # Live reloading for Hotwire applications [https://github.com/hotwired/spark]
   gem "hotwire-spark", "~> 0.1"
+ 
+  #ruby-lsp導入
+  gem "ruby-lsp"
 end
 
 group :test do

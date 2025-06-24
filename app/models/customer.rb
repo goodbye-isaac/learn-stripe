@@ -7,4 +7,9 @@ class Customer < ApplicationRecord
     validates :name
     validates :status
   end
+  enum :status, {
+    normal: 0,
+    withdrawn: 1,
+    banned: 2
+  }
 end
