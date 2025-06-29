@@ -73,6 +73,7 @@ services:
 
   web:
     <<: *default-app
+    command: /bin/sh -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 8000 -b '0.0.0.0'"
     deploy:
       resources:
         limits:
