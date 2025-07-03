@@ -6,5 +6,5 @@ class Product < ApplicationRecord
     validates :stock
     validates :image
   end
-  has_one_attaches :image
+  has_one_attached :image
 end
