@@ -8,7 +8,7 @@ class Customer::CheckoutsController < ApplicationController
     redirect_to session.url, allow_other_host: true
   end
 
-  privete
+  private
 
   def create_session(line_items)
     Stripe::Checkout::Session.create(
