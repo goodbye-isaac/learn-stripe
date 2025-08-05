@@ -25,7 +25,36 @@ class Customer::WebhooksController < ApplicationController
 
     case enent.type
     when "checkout.session.completed"
-      # ... execute a process
+      session = event.data.object # sessionの取得
+      customer = Customer.find(session.client_reference_id)
+      return unless customer
+
+      # トランザクション処理開始
+      ApplicationRecord.transaction do
+        order = create_order(session) # sessionを元にordersテーブルにデータを挿入
+        session_with_expand = Stripe::Checkout::Session.retrieve({ id: session.id, expand: [ "line_items" ] })
+        session_with_expand.line_items.data.each do |line_item|
+          create_order_details(order, line_item) # 取り出したline_itemをorder_detailsテーブルに登録
+        end
+      end
+      # トランザクション処理終了
+      redirect_to session.success_url
     end
+  end
+
+  private
+
+  def create_order(session)
+    Order.create!({
+      customer_id: session.client_reference_id,
+      name: session.shipping_details.name,
+      postal_code: session.shipping_details.address.postal_code,
+      prefecture: session.shipping_detailsaddress.state,
+      address1: session.shipping_details.address.line1,
+      address2: session.shipping_details.address.line2,
+      postage: session.shipping_options[0].shipping_amount,
+      billing_amount: session.amount_total,
+      status: "confirm_payment"
+    })
   end
 end
