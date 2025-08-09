@@ -25,7 +25,7 @@ class Customer::WebhooksController < ApplicationController
 
     case enent.type
     when "checkout.session.completed"
-      session = event.data.object # sessionの取得
+      session = event.data.object # sessionオブジェクトの取得
       customer = Customer.find(session.client_reference_id)
       return unless customer
 
@@ -38,6 +38,7 @@ class Customer::WebhooksController < ApplicationController
         end
       end
       # トランザクション処理終了
+      customer.cart_items.destroy_all
       redirect_to session.success_url
     end
   end
@@ -56,5 +57,18 @@ class Customer::WebhooksController < ApplicationController
       billing_amount: session.amount_total,
       status: "confirm_payment"
     })
+  end
+
+  def create_order_details(order, line_item)
+    product = Stripe::Product.retrieve(line_item.price.product)
+    purchased_product = Product.find(product.metadata.product_id)
+    raise ActiveRecord::RecordNotFound if purchased_product.nil?
+
+    order_detail = order.order_details.create!({
+      product_id: purchased_product.id,
+      price: line_item.price.unit_amount,
+      quantity: line_item.quantity
+    })
+    purchased_product.update!(stock: (purchased_product.stock - order_detail.quantity))# 購入された商品の在庫数の更新
   end
 end
